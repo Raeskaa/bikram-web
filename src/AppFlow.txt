@@ -1,0 +1,234 @@
+# LeapSpace AI - Complete Application Flow
+# Last Updated: Phase 4 & 5 Complete!
+
+═══════════════════════════════════════════════════════════════
+PHASE 1: AUTHENTICATION POLISH ✅ COMPLETE
+═══════════════════════════════════════════════════════════════
+
+### SignIn Screen Enhancements ✅
+- ✅ Email/Phone toggle
+- ✅ Social login (Google, Facebook, LinkedIn, Apple, WhatsApp, WeChat)
+- ✅ Geographic detection for social buttons (US/IN/CN/EU)
+- ✅ Privacy & T&C links at footer
+- ✅ Support email (support@leapspace.ai)
+- ✅ Copyright notice (© 2026 LeapSpace AI)
+- ✅ "I agree to T&C" checkbox with validation
+- ✅ Password strength indicator
+- ✅ Better error states (email not found, account locked, wrong password)
+- ✅ Logo clickable → home
+- ✅ Terms acceptance required
+
+### Register Screen Enhancements ✅
+- ✅ Email/Phone toggle switcher
+- ✅ Password confirmation field
+- ✅ Password strength meter (Weak/Fair/Good/Strong)
+- ✅ Visual strength indicator (colored progress bar)
+- ✅ Passwords match confirmation
+- ✅ Terms acceptance checkbox
+- ✅ Geographic social buttons
+- ✅ Footer with Privacy, T&C, Support links
+
+### AuthLayout Enhancements ✅
+- ✅ Logo clickable → home functionality
+- ✅ Footer with Privacy Policy, Terms, Support
+- ✅ Copyright notice with dynamic year
+- ✅ Support email link (support@leapspace.ai)
+
+═══════════════════════════════════════════════════════════════
+PHASE 2: GUEST MODE (SIMPLIFIED) ✅ COMPLETE
+═══════════════════════════════════════════════════════════════
+
+- ✅ UpgradeModal component exists with multiple triggers
+- ✅ Triggers: publish, private, download, share, credits, paid
+- ✅ Clean modal design with benefits list
+- ✅ Sign Up / Sign In options
+- ✅ "No credit card required" messaging
+- ❌ Skipped: Credit counter in header (per user request)
+- ❌ Skipped: Smart banner (per user request)
+
+Note: Action blockers are ready to be integrated throughout the app wherever
+guest users try to access restricted features.
+
+═══════════════════════════════════════════════════════════════
+PHASE 3: SETTINGS EXPANSION ✅ COMPLETE
+═══════════════════════════════════════════════════════════════
+
+### Connected Accounts Tab ✅ FULLY BUILT
+- ✅ "Currently Connected" section showing linked accounts
+- ✅ Displays: Google, Facebook, LinkedIn with emails and last used
+- ✅ Disconnect buttons for each account
+- ✅ "Available to Connect" grid with 6+ providers
+- ✅ Each provider shows icon, description, and benefit
+- ✅ "Browse all 100+ integrations" link
+- ✅ "Why connect multiple accounts?" education section
+- ✅ Benefits: Account recovery, cross-platform sync, merge detection, enhanced security
+- ✅ "Duplicate Account Detection" panel
+- ✅ "Scan for duplicates now" button
+
+### Privacy & Data Tab ✅ FULLY BUILT
+- ✅ Data Sharing controls (third parties, collection, analytics)
+- ✅ Data Access request functionality
+- ✅ Data Deletion (account data deletion)
+- ✅ Checkbox toggles for all privacy settings
+- ✅ Update Settings button
+
+### Accessibility Tab ✅ FULLY BUILT
+- ✅ Screen Reader Support toggle
+- ✅ High Contrast Mode toggle
+- ✅ Text to Speech toggle
+- ✅ Keyboard Navigation enable/disable
+- ✅ Text Size adjustment
+- ✅ Update Settings button
+
+### Advanced Tab ✅ FULLY BUILT
+- ✅ API Access toggle
+- ✅ Generate API Key field
+- ✅ API Key Permissions (Read Only / Read and Write)
+- ✅ Debugging Tools enable/disable
+- ✅ Advanced Features for power users
+- ✅ Update Settings button
+
+### Enhanced Existing Tabs ✅
+- ✅ General: Workspace name, Language, Timezone
+- ✅ Notifications: Email, Push, Weekly Digest, Event Reminders (all with toggles)
+- ✅ Profile: Avatar upload, First/Last name, Email, Bio
+- ✅ Security: Change password, 2FA, Active sessions
+- ✅ Billing: Current plan, Next billing date, Payment methods
+
+═══════════════════════════════════════════════════════════════
+PHASE 4: ACCOUNT MERGING ✅ COMPLETE
+═══════════════════════════════════════════════════════════════
+
+### AccountMergeModal ✅ FULLY BUILT
+- ✅ Side-by-side account comparison UI
+- ✅ Shows both accounts with:
+  - Provider name (Google, Facebook, LinkedIn, etc.)
+  - Email address
+  - Join date (Created date)
+  - Courses count
+  - Communities count
+  - Events count
+  - Achievements count
+- ✅ Select primary account (radio button style)
+- ✅ "What happens when you merge?" education section
+- ✅ Benefits list: All content preserved, primary email used, both login methods work, 30-day undo
+- ✅ "Merge accounts" and "Keep separate" buttons
+- ✅ Warning notice at top (yellow banner)
+- ✅ Footer note about 30-day undo
+
+### MergeDetectionBanner ✅ FULLY BUILT
+- ✅ Yellow banner at top of app
+- ✅ Shows duplicate email detected
+- ✅ "Review & Merge" button
+- ✅ Dismiss button (X)
+- ✅ Icon with user icon
+- ✅ Brief message explaining the duplicate
+
+### Integration Ready ✅
+- ✅ Components imported into App.tsx
+- ✅ Ready to trigger on social login
+- ✅ Can trigger from Settings → Connected Accounts
+- ✅ Mock data structure for testing
+
+═══════════════════════════════════════════════════════════════
+PHASE 5: ONBOARDING ✅ COMPLETE
+═══════════════════════════════════════════════════════════════
+
+### Enhanced OnboardingFlow ✅ FULLY BUILT
+- ✅ **Step 1: Welcome**
+  - Welcome message with user name
+  - "Complete tutorial to earn 500 bonus credits" badge
+  - Gift icon and gradient background
+  - Get Started button
+  - Skip for now button
+
+- ✅ **Step 2: Interests**
+  - "What are you interested in?" question
+  - 8 interest categories (Technology, Business, Design, Marketing, Education, Health, Finance, Creative Arts)
+  - Grid layout with icons
+  - Multi-select with checkmarks
+  - Purple highlight for selected
+  - Back and Continue buttons
+
+- ✅ **Step 3: Goals**
+  - "What do you want to achieve?" question
+  - 6 goal options (Build community, Create courses, Host events, Grow audience, Learn skills, Network)
+  - List layout with icons
+  - Multi-select with checkmarks
+  - Back and Continue buttons
+
+- ✅ **Step 4: Profile Setup**
+  - "Tell us about yourself" question
+  - 3 input fields:
+    - Your name (pre-filled if available)
+    - Your role
+    - Your company
+  - Icon indicators for each field
+  - Back and Complete setup buttons
+
+### State Management ✅
+- ✅ 4-step progress indicator with checkmarks
+- ✅ Profile data collection and storage
+- ✅ Interests and goals saved to localStorage
+- ✅ onboardingCompleted flag for skip/resume
+- ✅ Bonus credits awarded on completion (500 credits)
+
+### Integration ✅
+- ✅ Triggered for new users after registration
+- ✅ Can be skipped
+- ✅ Saves user preferences
+- ✅ Returns to home screen after completion
+
+═══════════════════════════════════════════════════════════════
+UPCOMING PHASES
+═══════════════════════════════════════════════════════════════
+
+## PHASE 6: MOBILE (Days 14-15)
+- [ ] Mobile navigation (hamburger menu)
+- [ ] Responsive layouts for auth screens
+- [ ] Touch-friendly buttons and dropdowns
+- [ ] Mobile-optimized header
+
+## PHASE 7: POLISH (Days 16-18)
+- [ ] Drafts page (draft communities, events, courses, posts)
+- [ ] Resume editing functionality
+- [ ] Final UI polish
+- [ ] Edge case testing
+- [ ] Integration assets (100+ logos)
+
+═══════════════════════════════════════════════════════════════
+CURRENT APP STRUCTURE
+═══════════════════════════════════════════════════════════════
+
+## Auth Flow States (App.tsx)
+'signin' → SignIn screen
+'register' → Register screen
+'forgot-password' → ForgotPassword screen
+'all-login-methods' → AllLoginMethods screen
+'onboarding' → OnboardingFlow (for new users)
+'home' → Main dashboard (after login)
+
+## User States
+1. Guest (isGuest = true, guestCredits = 1000)
+2. Authenticated (currentUser object, isGuest = false)
+3. New User (showOnboarding = true)
+4. Returning User (resume where left off)
+
+## Geographic Detection Logic (To Implement)
+China → WeChat, Weibo
+India → WhatsApp, Phone
+USA → Google, Apple, Facebook
+Europe → Google, Apple
+Middle East → WhatsApp, Google
+
+═══════════════════════════════════════════════════════════════
+FILES BEING MODIFIED
+═══════════════════════════════════════════════════════════════
+
+/components/auth/SignIn.tsx - ENHANCED
+/components/auth/Register.tsx - ENHANCED
+/components/auth/AuthLayout.tsx - ENHANCED
+/components/auth/ForgotPassword.tsx - LATER
+/components/AllLoginMethods.tsx - ENHANCED
+/App.tsx - Minor updates for new flows
+/AppFlow.txt - THIS FILE (tracking progress)

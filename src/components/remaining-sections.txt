@@ -1,0 +1,188 @@
+INSERT THESE SECTIONS BEFORE LINE 2094 (before the closing of Members view parent):
+
+{/* Analytics View - COPY THIS ENTIRE BLOCK */}
+{mainView === 'analytics' && canAccessAnalytics && (
+  <div className="flex-1 overflow-y-auto">
+    <div className="px-6 py-4 border-b border-gray-200">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-gray-900">Analytics</h2>
+          <p className="text-sm text-gray-600 mt-1">Track your community's performance</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <Calendar className="size-4 mr-2" />
+            Last 30 days
+          </Button>
+          <Button variant="outline" size="sm">
+            Export
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    <div className="p-6">
+      <div className="max-w-6xl space-y-6">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Total Members</span>
+              <UsersIcon className="size-4 text-purple-600" />
+            </div>
+            <p className="text-2xl text-gray-900 mb-1">128</p>
+            <p className="text-xs text-green-600">↑ 12% vs last month</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Engagement Rate</span>
+              <Activity className="size-4 text-blue-600" />
+            </div>
+            <p className="text-2xl text-gray-900 mb-1">68%</p>
+            <p className="text-xs text-green-600">↑ 5% vs last month</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Active Courses</span>
+              <GraduationCap className="size-4 text-orange-600" />
+            </div>
+            <p className="text-2xl text-gray-900 mb-1">5</p>
+            <p className="text-xs text-gray-500">2 published</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Revenue (MTD)</span>
+              <TrendingUp className="size-4 text-emerald-600" />
+            </div>
+            <p className="text-2xl text-gray-900 mb-1">$12.4k</p>
+            <p className="text-xs text-green-600">↑ 23% vs last month</p>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Member Growth Chart */}
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <h3 className="text-sm text-gray-900 mb-4">Member Growth</h3>
+            <div className="h-48 flex items-end justify-around gap-2">
+              {[45, 52, 48, 63, 71, 68, 78, 85, 92, 98, 105, 128].map((value, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                  <div className="w-full bg-purple-200 rounded-t" style={{ height: `${(value / 128) * 100}%` }}>
+                    <div className="w-full bg-purple-600 rounded-t h-1/2" />
+                  </div>
+                  <span className="text-xs text-gray-500">{['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][idx]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Engagement Chart */}
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <h3 className="text-sm text-gray-900 mb-4">Weekly Engagement</h3>
+            <div className="h-48 flex items-end justify-around gap-2">
+              {[65, 72, 68, 75, 71, 68, 78].map((value, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                  <div className="w-full bg-blue-200 rounded-t" style={{ height: `${value}%` }}>
+                    <div className="w-full bg-blue-600 rounded-t h-1/2" />
+                  </div>
+                  <span className="text-xs text-gray-500">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Content Performance */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <h3 className="text-sm text-gray-900 mb-4">Top Performing Posts</h3>
+          <div className="space-y-3">
+            {samplePosts.slice(0, 3).map((post, idx) => (
+              <div key={post.id} className="flex items-center gap-4 p-3 border border-gray-100 rounded-lg">
+                <div className="flex items-center justify-center size-8 bg-gray-100 rounded text-sm text-gray-600">
+                  #{idx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-900 truncate">{post.content}</p>
+                  <p className="text-xs text-gray-500">by {post.author.name} • {post.timestamp}</p>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <Heart className="size-4" />
+                    <span>{post.reactions.reduce((sum, r) => sum + r.count, 0)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MessageCircle className="size-4" />
+                    <span>{post.replies.length}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="size-4" />
+                    <span>{post.aiScore}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Course Completion */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <h3 className="text-sm text-gray-900 mb-4">Course Completion Rates</h3>
+          <div className="space-y-3">
+            {[
+              { name: 'Web Development Bootcamp', completion: 72 },
+              { name: 'Digital Marketing Fundamentals', completion: 85 },
+              { name: 'UI/UX Design Masterclass', completion: 56 }
+            ].map((course, idx) => (
+              <div key={idx} className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-900">{course.name}</span>
+                  <span className="text-gray-600">{course.completion}%</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${course.completion}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AI Insights */}
+        {userRole === 'admin' && (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="size-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Brain className="size-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm text-gray-900 mb-1">AI Insights & Predictions</h3>
+                <div className="space-y-2 mt-3">
+                  <div className="flex items-start gap-2 text-sm">
+                    <TrendingUp className="size-4 text-green-600 mt-0.5" />
+                    <div>
+                      <p className="text-gray-900">Engagement spike predicted for Thursday 2-4 PM</p>
+                      <p className="text-xs text-gray-600">Best time to post announcements this week</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <AlertCircle className="size-4 text-orange-600 mt-0.5" />
+                    <div>
+                      <p className="text-gray-900">8 members at risk of churning</p>
+                      <p className="text-xs text-gray-600">Consider personalized re-engagement campaign</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <Target className="size-4 text-blue-600 mt-0.5" />
+                    <div>
+                      <p className="text-gray-900">Community health trending toward 85/100</p>
+                      <p className="text-xs text-gray-600">On track to meet monthly goals</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
