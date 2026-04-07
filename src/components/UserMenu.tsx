@@ -129,7 +129,7 @@ export function UserMenu({
               className={menuItemClass}
             >
               <Settings className="size-4 text-muted-foreground" />
-              <span>Global Settings</span>
+                <span>My Account</span>
             </button>
 
             <button

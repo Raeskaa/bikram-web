@@ -1,7 +1,27 @@
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Bell, Briefcase, Eye, KeyRound, Link2, Search, Shield, User, Wallet } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ArrowLeft,
+  Bell,
+  Briefcase,
+  CheckCircle2,
+  Eye,
+  KeyRound,
+  Link2,
+  Search,
+  Shield,
+  Sparkles,
+  User,
+  Wallet,
+} from 'lucide-react';
+import { toast } from 'sonner@2.0.3';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { ScrollArea } from './ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Switch } from './ui/switch';
+import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
+import { Textarea } from './ui/textarea';
 import { cn } from './ui/utils';
 
 type AccountSection = 'settings' | 'authentication' | 'billing' | 'api-tokens' | 'active-sessions';
@@ -17,6 +37,55 @@ interface ProfileSettingsPageProps {
   onBack?: () => void;
   initialSection?: AccountSection;
 }
+
+type GlobalProfileForm = {
+  fullName: string;
+  preferredName: string;
+  headline: string;
+  bio: string;
+  location: string;
+  website: string;
+  role: string;
+  company: string;
+  industry: string;
+  expertise: string;
+  skills: string;
+  experience: string;
+  education: string;
+  featuredLinks: string;
+  profileVisibility: string;
+  showCompany: boolean;
+  showLocation: boolean;
+  showSocialLinks: boolean;
+  searchDiscoverability: boolean;
+  recommendationSignals: boolean;
+};
+
+type AccountForm = {
+  language: string;
+  region: string;
+  timezone: string;
+  theme: string;
+  startPage: string;
+  email: string;
+  passwordState: string;
+  twoFactor: boolean;
+  passkeys: string;
+  securityAlerts: boolean;
+  plan: string;
+  paymentMethod: string;
+  billingEmail: string;
+  renewalDate: string;
+  invoiceDelivery: string;
+  googleConnected: boolean;
+  linkedInConnected: boolean;
+  microsoftConnected: boolean;
+  githubConnected: boolean;
+  activeSessionLabel: string;
+  activeSessionDevice: string;
+  trustedDevices: string;
+  sessionPolicy: string;
+};
 
 const profileNav = [
   { id: 'profile-basics' as const, label: 'Profile Basics', icon: User },
@@ -37,11 +106,20 @@ function mapInitialSection(initialSection: AccountSection): SettingsSection {
   return initialSection;
 }
 
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 function SectionCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-border bg-card p-5">
-      <div className="mb-4">
-        <div className="text-sm font-semibold text-foreground">{title}</div>
+    <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="mb-5">
+        <div className="text-base font-semibold text-foreground">{title}</div>
         {description ? <div className="mt-1 text-sm text-muted-foreground">{description}</div> : null}
       </div>
       {children}
@@ -49,40 +127,178 @@ function SectionCard({ title, description, children }: { title: string; descript
   );
 }
 
-function Row({ label, value, action = 'Edit' }: { label: string; value: string; action?: string }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-t border-border py-4 first:border-t-0 first:pt-0 last:pb-0">
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium text-foreground">{label}</div>
-        <div className="mt-1 text-sm text-muted-foreground">{value}</div>
-      </div>
-      <Button variant="outline" size="sm" className="rounded-lg border-border bg-card shadow-none">{action}</Button>
+    <div className="space-y-2">
+      <Label className="text-sm font-medium text-foreground">{label}</Label>
+      {children}
+      {hint ? <p className="text-xs leading-5 text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
 
-function ToggleRow({ label, value }: { label: string; value: string }) {
+function StatTile({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-t border-border py-4 first:border-t-0 first:pt-0 last:pb-0">
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium text-foreground">{label}</div>
-        <div className="mt-1 text-sm text-muted-foreground">{value}</div>
-      </div>
-      <Button variant="outline" size="sm" className="rounded-lg border-border bg-card shadow-none">Manage</Button>
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+      <div className="mt-3 text-2xl font-semibold text-foreground">{value}</div>
+      <div className="mt-1 text-sm text-muted-foreground">{hint}</div>
     </div>
   );
 }
+
+function ToggleField({
+  label,
+  description,
+  checked,
+  onCheckedChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-border bg-muted/40 p-4">
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium text-foreground">{label}</div>
+        <div className="mt-1 text-sm leading-6 text-muted-foreground">{description}</div>
+      </div>
+      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+    </div>
+  );
+}
+
+const regionOptions = [
+  { value: 'india', label: 'India' },
+  { value: 'united-states', label: 'United States' },
+  { value: 'singapore', label: 'Singapore' },
+  { value: 'united-kingdom', label: 'United Kingdom' },
+];
+
+const timezoneOptions = [
+  { value: 'gmt-5-30', label: 'GMT+5:30' },
+  { value: 'utc', label: 'UTC' },
+  { value: 'pst', label: 'Pacific Time' },
+  { value: 'est', label: 'Eastern Time' },
+];
+
+const startPageOptions = [
+  { value: 'engagement-feed', label: 'Engagement feed' },
+  { value: 'home-overview', label: 'Home overview' },
+  { value: 'events', label: 'Events' },
+  { value: 'communities', label: 'Communities' },
+];
+
+const visibilityOptions = [
+  { value: 'members-only', label: 'LeapSpace members only' },
+  { value: 'connections-only', label: 'Connections only' },
+  { value: 'public', label: 'Public profile' },
+];
 
 export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'settings' }: ProfileSettingsPageProps) {
   const [section, setSection] = useState<SettingsSection>(mapInitialSection(initialSection));
   const userName = currentUser?.name || 'Google User';
   const email = currentUser?.email || 'user@google.com';
 
+  const initialProfileForm = useMemo<GlobalProfileForm>(() => ({
+    fullName: userName,
+    preferredName: 'Google',
+    headline: 'AI systems operator building high-signal communities',
+    bio: 'I design, operate, and grow community-led learning systems for professionals.',
+    location: 'Bengaluru, India',
+    website: 'https://trueleap.io/rae',
+    role: 'Community Systems Designer',
+    company: 'TrueLeap',
+    industry: 'Professional learning and creator tools',
+    expertise: 'Community design, event systems, growth operations',
+    skills: 'Growth strategy, GTM, event operations, mentoring',
+    experience: '3 roles added across community, learning, and growth functions.',
+    education: '2 entries added with design and systems focus.',
+    featuredLinks: 'LinkedIn, portfolio, case studies',
+    profileVisibility: 'members-only',
+    showCompany: true,
+    showLocation: false,
+    showSocialLinks: true,
+    searchDiscoverability: true,
+    recommendationSignals: true,
+  }), [userName]);
+
+  const initialAccountForm = useMemo<AccountForm>(() => ({
+    language: 'English',
+    region: 'india',
+    timezone: 'gmt-5-30',
+    theme: 'light',
+    startPage: 'engagement-feed',
+    email,
+    passwordState: 'Updated 41 days ago',
+    twoFactor: true,
+    passkeys: '1 registered device',
+    securityAlerts: true,
+    plan: 'Business plan billed monthly',
+    paymentMethod: 'Visa ending in 4242',
+    billingEmail: email,
+    renewalDate: 'April 28, 2026',
+    invoiceDelivery: 'Monthly summary to finance and account owner',
+    googleConnected: true,
+    linkedInConnected: true,
+    microsoftConnected: false,
+    githubConnected: false,
+    activeSessionLabel: 'Chrome on Mac',
+    activeSessionDevice: 'San Francisco, CA • Active now',
+    trustedDevices: '3 devices marked trusted',
+    sessionPolicy: 'Challenge sign-in when device or region changes',
+  }), [email]);
+
+  const [profileForm, setProfileForm] = useState<GlobalProfileForm>(initialProfileForm);
+  const [accountForm, setAccountForm] = useState<AccountForm>(initialAccountForm);
+  const [searchQuery, setSearchQuery] = useState('');
+
   useEffect(() => {
     setSection(mapInitialSection(initialSection));
   }, [initialSection]);
 
+  useEffect(() => {
+    setProfileForm(initialProfileForm);
+  }, [initialProfileForm]);
+
+  useEffect(() => {
+    setAccountForm(initialAccountForm);
+  }, [initialAccountForm]);
+
   const showingProfileSection = section === 'profile-basics' || section === 'professional-identity' || section === 'visibility';
+  const query = searchQuery.trim().toLowerCase();
+  const filteredProfileNav = profileNav.filter(item => item.label.toLowerCase().includes(query));
+  const filteredAccountNav = accountNav.filter(item => item.label.toLowerCase().includes(query));
+  const profileDirty = JSON.stringify(profileForm) !== JSON.stringify(initialProfileForm);
+  const accountDirty = JSON.stringify(accountForm) !== JSON.stringify(initialAccountForm);
+  const pageDirty = showingProfileSection ? profileDirty : accountDirty;
+
+  const handleProfileReset = () => {
+    setProfileForm(initialProfileForm);
+    toast.success('My Profile reset', { description: 'Unsaved profile edits were discarded.' });
+  };
+
+  const handleAccountReset = () => {
+    setAccountForm(initialAccountForm);
+    toast.success('My Account reset', { description: 'Unsaved account edits were discarded.' });
+  };
+
+  const handleProfileSave = () => {
+    toast.success('My Profile updated', { description: 'Global professional identity changes are saved.' });
+  };
+
+  const handleAccountSave = () => {
+    toast.success('My Account updated', { description: 'Preferences, security, and billing changes are saved.' });
+  };
+
+  const updateProfile = <K extends keyof GlobalProfileForm,>(key: K, value: GlobalProfileForm[K]) => {
+    setProfileForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  const updateAccount = <K extends keyof AccountForm,>(key: K, value: AccountForm[K]) => {
+    setAccountForm(prev => ({ ...prev, [key]: value }));
+  };
 
   return (
     <div className="flex h-screen bg-background text-foreground">
@@ -93,180 +309,473 @@ export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'set
             Back
           </button>
 
-          <div className="mb-4">
-            <h1 className="text-xl font-semibold text-foreground">Account Center</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Separate your professional profile from your internal account settings.</p>
+          <div className="rounded-2xl border border-border bg-muted/40 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-sm font-semibold text-primary-foreground">
+                {getInitials(userName)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="truncate text-lg font-semibold text-foreground">Account Center</h1>
+                <p className="mt-1 text-sm text-muted-foreground">Editable global profile and account controls.</p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-border bg-card p-3">
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Profile</div>
+                <div className="mt-1 text-sm text-foreground">Global identity</div>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-3">
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Account</div>
+                <div className="mt-1 text-sm text-foreground">Security, billing, prefs</div>
+              </div>
+            </div>
           </div>
 
-          <div className="relative">
+          <div className="relative mt-4">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
+              value={searchQuery}
+              onChange={event => setSearchQuery(event.target.value)}
               placeholder="Search profile or account"
-              className="h-11 w-full rounded-xl border border-border bg-muted pl-9 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              className="h-11 rounded-xl border-border bg-muted pl-9"
             />
           </div>
         </div>
 
         <ScrollArea className="flex-1">
           <div className="p-4 space-y-5">
-            <div>
-              <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">My Profile</div>
-              <div className="space-y-1">
-                {profileNav.map(item => {
-                  const Icon = item.icon;
-                  const active = section === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setSection(item.id)}
-                      className={cn('flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors', active ? 'bg-sidebar-accent text-foreground border border-border' : 'text-muted-foreground hover:bg-accent hover:text-foreground border border-transparent')}
-                    >
-                      <Icon className="size-4" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
+            {filteredProfileNav.length > 0 ? (
+              <div>
+                <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">My Profile</div>
+                <div className="space-y-1">
+                  {filteredProfileNav.map(item => {
+                    const Icon = item.icon;
+                    const active = section === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setSection(item.id)}
+                        className={cn(
+                          'flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition-colors',
+                          active ? 'bg-sidebar-accent text-foreground border border-border shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-foreground border border-transparent',
+                        )}
+                      >
+                        <Icon className="size-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            ) : null}
 
-            <div>
-              <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">My Account</div>
-              <div className="space-y-1">
-                {accountNav.map(item => {
-                  const Icon = item.icon;
-                  const active = section === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setSection(item.id)}
-                      className={cn('flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors', active ? 'bg-sidebar-accent text-foreground border border-border' : 'text-muted-foreground hover:bg-accent hover:text-foreground border border-transparent')}
-                    >
-                      <Icon className="size-4" />
-                      <span>{item.label}</span>
-                    </button>
-                  );
-                })}
+            {filteredAccountNav.length > 0 ? (
+              <div>
+                <div className="px-2 mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">My Account</div>
+                <div className="space-y-1">
+                  {filteredAccountNav.map(item => {
+                    const Icon = item.icon;
+                    const active = section === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setSection(item.id)}
+                        className={cn(
+                          'flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition-colors',
+                          active ? 'bg-sidebar-accent text-foreground border border-border shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-foreground border border-transparent',
+                        )}
+                      >
+                        <Icon className="size-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
         </ScrollArea>
       </div>
 
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="p-6 pb-24 max-w-6xl mx-auto">
-            <div className="mb-8 border-b border-border pb-5">
-              <h2 className="text-3xl font-semibold text-foreground">{showingProfileSection ? 'My Profile' : 'My Account'}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {showingProfileSection
-                  ? 'This is your professional identity across LeapSpace. It is distinct from your technical account settings.'
-                  : `${email} · Internal account settings for login, billing, security, preferences, and connected providers.`}
-              </p>
+          <div className="mx-auto max-w-6xl p-6 pb-28">
+            <div className="mb-8 flex flex-col gap-5 rounded-3xl border border-border bg-gradient-to-br from-card via-card to-muted/40 p-6 shadow-sm lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <Sparkles className="size-3.5" />
+                  {showingProfileSection ? 'Global profile' : 'Internal account controls'}
+                </div>
+                <h2 className="text-3xl font-semibold text-foreground">{showingProfileSection ? 'My Profile' : 'My Account'}</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                  {showingProfileSection
+                    ? 'This is your default professional identity across LeapSpace. Space-specific profiles can override presentation and privacy without changing this base profile.'
+                    : `${email} is the account owner. Use this area for preferences, sign-in, billing, linked providers, and device control.`}
+                </p>
+              </div>
+
+              <div className="grid w-full gap-3 sm:grid-cols-3 lg:w-auto lg:min-w-[360px]">
+                <StatTile label="Completion" value={showingProfileSection ? '86%' : '92%'} hint={showingProfileSection ? 'Add 1 more link to finish trust signals.' : 'Security and billing are set up.'} />
+                <StatTile label="Default Reach" value={showingProfileSection ? 'Members only' : '2FA On'} hint={showingProfileSection ? 'Scoped visibility handled per LeapSpace.' : 'Authentication is protected.'} />
+                <StatTile label="Draft State" value={pageDirty ? 'Unsaved' : 'Saved'} hint={pageDirty ? 'You have edits to review.' : 'No pending changes.'} />
+              </div>
             </div>
 
             {section === 'profile-basics' ? (
-              <div className="max-w-5xl space-y-4">
-                <SectionCard title="Core identity" description="Public-facing identity fields that define your base profile across LeapSpaces.">
-                  <Row label="Full name" value={userName} />
-                  <Row label="Preferred name" value="Google" />
-                  <Row label="Professional headline" value="AI systems operator building high-signal communities" />
-                  <Row label="Short bio" value="I design, operate, and grow community-led learning systems for professionals." />
-                  <Row label="Profile photo" value="Global profile photo used by default across LeapSpaces" action="Change" />
-                  <Row label="Cover image" value="Professional banner shown on your public profile" action="Change" />
+              <div className="space-y-5">
+                <SectionCard title="Profile Basics" description="These are the default identity fields LeapSpaces inherit from unless a scoped profile overrides them.">
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Full name">
+                      <Input value={profileForm.fullName} onChange={event => updateProfile('fullName', event.target.value)} />
+                    </Field>
+                    <Field label="Preferred name">
+                      <Input value={profileForm.preferredName} onChange={event => updateProfile('preferredName', event.target.value)} />
+                    </Field>
+                    <Field label="Professional headline" hint="Shows in profile headers, discovery cards, and member matching.">
+                      <Input value={profileForm.headline} onChange={event => updateProfile('headline', event.target.value)} />
+                    </Field>
+                    <Field label="Primary location">
+                      <Input value={profileForm.location} onChange={event => updateProfile('location', event.target.value)} />
+                    </Field>
+                    <div className="md:col-span-2">
+                      <Field label="Short bio" hint="Keep this portable. LeapSpace-specific context belongs in the LeapSpace Profile.">
+                        <Textarea value={profileForm.bio} onChange={event => updateProfile('bio', event.target.value)} className="min-h-28" />
+                      </Field>
+                    </div>
+                    <Field label="Personal website">
+                      <Input value={profileForm.website} onChange={event => updateProfile('website', event.target.value)} />
+                    </Field>
+                    <Field label="Profile assets" hint="Avatar and banner stay global by default and can be overridden inside a LeapSpace.">
+                      <div className="flex gap-3">
+                        <Button variant="outline" className="rounded-xl border-border">Change avatar</Button>
+                        <Button variant="outline" className="rounded-xl border-border">Change banner</Button>
+                      </div>
+                    </Field>
+                  </div>
                 </SectionCard>
 
-                <SectionCard title="Global profile note" description="LeapSpace-specific profile pages can override selected presentation fields, but this remains your default identity.">
-                  <div className="text-sm text-muted-foreground">Use this page for your global professional identity. Use a LeapSpace profile only when you want a different presentation, codename, or visibility inside one specific LeapSpace.</div>
+                <SectionCard title="How this works" description="Keep the split explicit so users understand where to edit what.">
+                  <div className="grid gap-4 lg:grid-cols-3">
+                    <div className="rounded-2xl border border-border bg-muted/40 p-4">
+                      <div className="text-sm font-semibold text-foreground">My Profile</div>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">Professional identity shared across LeapSpaces by default.</p>
+                    </div>
+                    <div className="rounded-2xl border border-border bg-muted/40 p-4">
+                      <div className="text-sm font-semibold text-foreground">My Account</div>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">Technical controls like sign-in, billing, sessions, and preferences.</p>
+                    </div>
+                    <div className="rounded-2xl border border-border bg-muted/40 p-4">
+                      <div className="text-sm font-semibold text-foreground">LeapSpace Profile</div>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">Scoped override layer for name, bio, visibility, anonymity, and message access.</p>
+                    </div>
+                  </div>
                 </SectionCard>
               </div>
             ) : null}
 
             {section === 'professional-identity' ? (
-              <div className="max-w-5xl space-y-4">
-                <SectionCard title="Professional identity" description="Profile fields used for discovery, matching, mentorship, and trust.">
-                  <Row label="Current role / title" value="Community Systems Designer" />
-                  <Row label="Company / organization" value="TrueLeap" />
-                  <Row label="Industry" value="Professional learning and creator tools" />
-                  <Row label="Primary expertise" value="Community design, event systems, growth operations" action="Edit" />
-                  <Row label="Skills" value="Growth strategy, GTM, event operations, mentoring" action="Edit" />
-                  <Row label="Work experience" value="3 roles added" action="Manage" />
-                  <Row label="Education" value="2 entries added" action="Manage" />
-                  <Row label="Featured links" value="LinkedIn, portfolio, case studies" action="Manage" />
+              <div className="space-y-5">
+                <SectionCard title="Professional Identity" description="Use richer fields here so the profile feels complete in discovery, trust, and matching surfaces.">
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Current role / title">
+                      <Input value={profileForm.role} onChange={event => updateProfile('role', event.target.value)} />
+                    </Field>
+                    <Field label="Company / organization">
+                      <Input value={profileForm.company} onChange={event => updateProfile('company', event.target.value)} />
+                    </Field>
+                    <Field label="Industry">
+                      <Input value={profileForm.industry} onChange={event => updateProfile('industry', event.target.value)} />
+                    </Field>
+                    <Field label="Primary expertise">
+                      <Input value={profileForm.expertise} onChange={event => updateProfile('expertise', event.target.value)} />
+                    </Field>
+                    <div className="md:col-span-2">
+                      <Field label="Skills and strengths" hint="Comma-separated works fine for this prototype.">
+                        <Textarea value={profileForm.skills} onChange={event => updateProfile('skills', event.target.value)} className="min-h-24" />
+                      </Field>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Field label="Work experience summary">
+                        <Textarea value={profileForm.experience} onChange={event => updateProfile('experience', event.target.value)} className="min-h-24" />
+                      </Field>
+                    </div>
+                    <Field label="Education summary">
+                      <Textarea value={profileForm.education} onChange={event => updateProfile('education', event.target.value)} className="min-h-24" />
+                    </Field>
+                    <Field label="Featured links">
+                      <Textarea value={profileForm.featuredLinks} onChange={event => updateProfile('featuredLinks', event.target.value)} className="min-h-24" />
+                    </Field>
+                  </div>
                 </SectionCard>
               </div>
             ) : null}
 
             {section === 'visibility' ? (
-              <div className="max-w-5xl space-y-4">
-                <SectionCard title="Global visibility" description="These are global profile visibility controls. LeapSpace-specific visibility is managed separately inside each LeapSpace profile.">
-                  <Row label="Profile visibility" value="LeapSpace members only" action="Change" />
-                  <ToggleRow label="Show company" value="Visible on global profile" />
-                  <ToggleRow label="Show location" value="Hidden on global profile" />
-                  <ToggleRow label="Show social links" value="Visible on global profile" />
-                  <ToggleRow label="Search discoverability" value="Allow members to find this global profile" />
-                  <ToggleRow label="Profile-based recommendations" value="Used for mentoring and matching suggestions" />
+              <div className="space-y-5">
+                <SectionCard title="Global Visibility" description="These are global defaults only. Scoped privacy and anonymity still belong to each LeapSpace Profile.">
+                  <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+                    <div className="space-y-4">
+                      <Field label="Profile visibility">
+                        <Select value={profileForm.profileVisibility} onValueChange={value => updateProfile('profileVisibility', value)}>
+                          <SelectTrigger className="h-11 rounded-xl border-border bg-input-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {visibilityOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </Field>
+
+                      <ToggleField
+                        label="Show company on global profile"
+                        description="Useful for trust and professional context, but this is still a global default."
+                        checked={profileForm.showCompany}
+                        onCheckedChange={checked => updateProfile('showCompany', checked)}
+                      />
+                      <ToggleField
+                        label="Show location on global profile"
+                        description="Keep this off if you want scoped spaces to decide when location is relevant."
+                        checked={profileForm.showLocation}
+                        onCheckedChange={checked => updateProfile('showLocation', checked)}
+                      />
+                      <ToggleField
+                        label="Show social links"
+                        description="Controls whether linked websites and profiles appear publicly on the global profile."
+                        checked={profileForm.showSocialLinks}
+                        onCheckedChange={checked => updateProfile('showSocialLinks', checked)}
+                      />
+                      <ToggleField
+                        label="Allow member search discovery"
+                        description="Makes the global profile searchable for matching, mentoring, and member directory flows."
+                        checked={profileForm.searchDiscoverability}
+                        onCheckedChange={checked => updateProfile('searchDiscoverability', checked)}
+                      />
+                      <ToggleField
+                        label="Use profile for recommendations"
+                        description="Feeds matching, mentoring, and collaboration suggestions using your global defaults."
+                        checked={profileForm.recommendationSignals}
+                        onCheckedChange={checked => updateProfile('recommendationSignals', checked)}
+                      />
+                    </div>
+
+                    <div className="rounded-2xl border border-border bg-muted/40 p-5">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <CheckCircle2 className="size-4 text-primary" />
+                        What stays out of My Profile
+                      </div>
+                      <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
+                        <p>Billing, invoices, payment methods, sessions, passwords, and provider connections remain in My Account.</p>
+                        <p>Anonymity rules do not belong here either. They are handled inside each LeapSpace Profile so privacy stays scoped.</p>
+                      </div>
+                    </div>
+                  </div>
                 </SectionCard>
               </div>
             ) : null}
 
             {section === 'settings' ? (
-              <div className="max-w-5xl space-y-4">
-                <SectionCard title="Preferences" description="Internal account preferences. These do not change your professional profile.">
-                  <Row label="Language" value="English" action="Change" />
-                  <Row label="Region" value="India" action="Change" />
-                  <Row label="Timezone" value="GMT+5:30" action="Change" />
-                  <Row label="Theme" value="Light" action="Change" />
-                  <Row label="Default start page after login" value="Engagement feed" action="Change" />
+              <div className="space-y-5">
+                <SectionCard title="Preferences" description="These affect the account experience, not the public profile.">
+                  <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    <Field label="Language">
+                      <Input value={accountForm.language} onChange={event => updateAccount('language', event.target.value)} />
+                    </Field>
+                    <Field label="Region">
+                      <Select value={accountForm.region} onValueChange={value => updateAccount('region', value)}>
+                        <SelectTrigger className="h-11 rounded-xl border-border bg-input-background"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {regionOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Timezone">
+                      <Select value={accountForm.timezone} onValueChange={value => updateAccount('timezone', value)}>
+                        <SelectTrigger className="h-11 rounded-xl border-border bg-input-background"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {timezoneOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+
+                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                    <Field label="Theme preference">
+                      <Tabs value={accountForm.theme} onValueChange={value => updateAccount('theme', value)} className="w-full">
+                        <TabsList className="h-11 w-full rounded-xl bg-muted p-1">
+                          <TabsTrigger value="light" className="rounded-lg">Light</TabsTrigger>
+                          <TabsTrigger value="system" className="rounded-lg">System</TabsTrigger>
+                          <TabsTrigger value="dark" className="rounded-lg">Dark</TabsTrigger>
+                        </TabsList>
+                      </Tabs>
+                    </Field>
+                    <Field label="Default start page">
+                      <Select value={accountForm.startPage} onValueChange={value => updateAccount('startPage', value)}>
+                        <SelectTrigger className="h-11 rounded-xl border-border bg-input-background"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {startPageOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
                 </SectionCard>
               </div>
             ) : null}
 
             {section === 'authentication' ? (
-              <div className="max-w-5xl space-y-4">
-                <SectionCard title="Authentication and security" description="Technical controls tied to sign-in, verification, sessions, and account security.">
-                  <Row label="Account email" value={email} action="Update" />
-                  <Row label="Password" value="Last updated 41 days ago" action="Change" />
-                  <Row label="Two-factor authentication" value="Enabled with authenticator app" action="Manage" />
-                  <Row label="Passkeys" value="1 registered device" action="Manage" />
-                  <Row label="Security alerts" value="Email and push enabled" action="Change" />
+              <div className="space-y-5">
+                <SectionCard title="Authentication and Security" description="This needs to feel operational, not just descriptive.">
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Account email">
+                      <Input value={accountForm.email} onChange={event => updateAccount('email', event.target.value)} />
+                    </Field>
+                    <Field label="Password state">
+                      <Input value={accountForm.passwordState} onChange={event => updateAccount('passwordState', event.target.value)} />
+                    </Field>
+                    <Field label="Passkeys">
+                      <Input value={accountForm.passkeys} onChange={event => updateAccount('passkeys', event.target.value)} />
+                    </Field>
+                    <Field label="Session challenge policy">
+                      <Input value={accountForm.sessionPolicy} onChange={event => updateAccount('sessionPolicy', event.target.value)} />
+                    </Field>
+                  </div>
+
+                  <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                    <ToggleField
+                      label="Two-factor authentication"
+                      description="Require a second factor for sign-in and sensitive account actions."
+                      checked={accountForm.twoFactor}
+                      onCheckedChange={checked => updateAccount('twoFactor', checked)}
+                    />
+                    <ToggleField
+                      label="Security alerts"
+                      description="Send alerts for new devices, unusual login attempts, and account recovery events."
+                      checked={accountForm.securityAlerts}
+                      onCheckedChange={checked => updateAccount('securityAlerts', checked)}
+                    />
+                  </div>
                 </SectionCard>
               </div>
             ) : null}
 
             {section === 'billing' ? (
-              <div className="max-w-5xl space-y-4">
-                <SectionCard title="Billing and subscription" description="Internal account billing controls. These are separate from your profile and separate from LeapSpace profile customization.">
-                  <Row label="Current plan" value="Business plan billed monthly" action="Manage plan" />
-                  <Row label="Payment method" value="Visa ending in 4242" action="Update" />
-                  <Row label="Billing email" value={email} action="Change" />
-                  <Row label="Upcoming renewal" value="April 28, 2026" action="View" />
-                  <Row label="Invoices" value="12 invoices available" action="Open" />
+              <div className="space-y-5">
+                <SectionCard title="Billing and Subscription" description="Billing belongs here so it never gets mixed into the profile experience.">
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Current plan">
+                      <Input value={accountForm.plan} onChange={event => updateAccount('plan', event.target.value)} />
+                    </Field>
+                    <Field label="Payment method">
+                      <Input value={accountForm.paymentMethod} onChange={event => updateAccount('paymentMethod', event.target.value)} />
+                    </Field>
+                    <Field label="Billing email">
+                      <Input value={accountForm.billingEmail} onChange={event => updateAccount('billingEmail', event.target.value)} />
+                    </Field>
+                    <Field label="Renewal date">
+                      <Input value={accountForm.renewalDate} onChange={event => updateAccount('renewalDate', event.target.value)} />
+                    </Field>
+                    <div className="md:col-span-2">
+                      <Field label="Invoice delivery">
+                        <Textarea value={accountForm.invoiceDelivery} onChange={event => updateAccount('invoiceDelivery', event.target.value)} className="min-h-24" />
+                      </Field>
+                    </div>
+                  </div>
                 </SectionCard>
               </div>
             ) : null}
 
             {section === 'api-tokens' ? (
-              <div className="max-w-5xl space-y-4">
-                <SectionCard title="Connected accounts" description="Manage linked login providers and technical account connections.">
-                  <Row label="Google" value="Connected and primary login" action="Primary" />
-                  <Row label="LinkedIn" value="Connected for profile import" action="Disconnect" />
-                  <Row label="Microsoft" value="Not connected" action="Connect" />
-                  <Row label="GitHub" value="Not connected" action="Connect" />
+              <div className="space-y-5">
+                <SectionCard title="Connected Accounts" description="Real connection state makes this page feel finished even in prototype form.">
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <ToggleField
+                      label="Google"
+                      description="Primary sign-in provider and recovery path."
+                      checked={accountForm.googleConnected}
+                      onCheckedChange={checked => updateAccount('googleConnected', checked)}
+                    />
+                    <ToggleField
+                      label="LinkedIn"
+                      description="Used for profile import and professional proof signals."
+                      checked={accountForm.linkedInConnected}
+                      onCheckedChange={checked => updateAccount('linkedInConnected', checked)}
+                    />
+                    <ToggleField
+                      label="Microsoft"
+                      description="Optional work account connection for organization users."
+                      checked={accountForm.microsoftConnected}
+                      onCheckedChange={checked => updateAccount('microsoftConnected', checked)}
+                    />
+                    <ToggleField
+                      label="GitHub"
+                      description="Optional developer identity connection and import source."
+                      checked={accountForm.githubConnected}
+                      onCheckedChange={checked => updateAccount('githubConnected', checked)}
+                    />
+                  </div>
                 </SectionCard>
               </div>
             ) : null}
 
             {section === 'active-sessions' ? (
-              <div className="max-w-5xl space-y-4">
-                <SectionCard title="Active sessions" description="Review active devices and revoke access when needed.">
-                  <Row label="Chrome on Mac" value="San Francisco, CA • Active now" action="Current" />
-                  <Row label="Safari on iPhone" value="Last active yesterday" action="Revoke" />
-                  <Row label="Trusted devices" value="3 devices marked trusted" action="Manage" />
+              <div className="space-y-5">
+                <SectionCard title="Active Sessions" description="Let this area feel actionable instead of like a static list.">
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Current session label">
+                      <Input value={accountForm.activeSessionLabel} onChange={event => updateAccount('activeSessionLabel', event.target.value)} />
+                    </Field>
+                    <Field label="Current session details">
+                      <Input value={accountForm.activeSessionDevice} onChange={event => updateAccount('activeSessionDevice', event.target.value)} />
+                    </Field>
+                    <Field label="Trusted devices summary">
+                      <Input value={accountForm.trustedDevices} onChange={event => updateAccount('trustedDevices', event.target.value)} />
+                    </Field>
+                    <Field label="Session control">
+                      <div className="flex gap-3">
+                        <Button variant="outline" className="rounded-xl border-border">Review devices</Button>
+                        <Button variant="outline" className="rounded-xl border-border">Revoke other sessions</Button>
+                      </div>
+                    </Field>
+                  </div>
                 </SectionCard>
               </div>
             ) : null}
           </div>
         </ScrollArea>
+
+        <div className="border-t border-border bg-card/95 px-6 py-4 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+            <div>
+              <div className="text-sm font-medium text-foreground">{pageDirty ? 'You have unsaved changes' : 'All changes saved'}</div>
+              <div className="mt-1 text-sm text-muted-foreground">
+                {showingProfileSection
+                  ? 'Saving here updates your global default profile only.'
+                  : 'Saving here updates only account-level controls.'}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                className="rounded-xl border-border"
+                onClick={showingProfileSection ? handleProfileReset : handleAccountReset}
+                disabled={!pageDirty}
+              >
+                Discard changes
+              </Button>
+              <Button className="rounded-xl" onClick={showingProfileSection ? handleProfileSave : handleAccountSave}>
+                Save changes
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
