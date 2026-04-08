@@ -489,7 +489,7 @@ export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'set
                 <SectionCard title="Profile Basics" description="These are the default identity fields LeapSpaces inherit from unless a scoped profile overrides them.">
                   {/* Avatar & Banner */}
                   <div className="mb-6 rounded-lg border border-border bg-muted/40 overflow-hidden">
-                    <div className="relative h-36 bg-gradient-to-br from-primary/30 via-primary/15 to-muted">
+                    <div className="relative h-28 bg-gradient-to-br from-primary/30 via-primary/15 to-muted">
                       <Button variant="outline" size="sm" className="absolute bottom-3 right-3 rounded-lg border-border bg-card/80 backdrop-blur text-xs gap-1.5">
                         <Image className="size-3.5" />
                         Change banner
