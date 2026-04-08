@@ -213,16 +213,6 @@ function RoleBadge({ role }: { role: LeapSpaceRole }) {
   );
 }
 
-function MetricCard({ label, value, hint }: { label: string; value: string; hint: string }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
-      <div className="mt-3 text-2xl font-semibold text-foreground">{value}</div>
-      <div className="mt-1 text-sm text-muted-foreground">{hint}</div>
-    </div>
-  );
-}
-
 const digestOptions = [
   { value: 'live', label: 'Live notifications' },
   { value: 'hourly', label: 'Hourly digest' },
@@ -457,6 +447,8 @@ export function GlobalSettingsPage({ initialTab = 'general', currentLeapSpace, c
       items: group.items.filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase())),
     }))
     .filter(group => group.items.length > 0);
+
+  const headerMeta = `${roleLabels[selectedLeapSpace.role]} role • ${selectedLeapSpace.communitiesCount || 0} groups • ${selectedLeapSpace.eventsCount || 0} events`;
 
   const saveProfile = () => {
     toast.success('LeapSpace profile updated', { description: `${selectedLeapSpace.name} now has fresh scoped profile settings.` });
@@ -893,10 +885,8 @@ export function GlobalSettingsPage({ initialTab = 'general', currentLeapSpace, c
                   </p>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[360px]">
-                  <MetricCard label="Role" value={roleLabels[selectedLeapSpace.role]} hint="Navigation and access change by role." />
-                  <MetricCard label="Members" value={String(selectedLeapSpace.communitiesCount || 0)} hint="Top-level space groups available." />
-                  <MetricCard label="Events" value={String(selectedLeapSpace.eventsCount || 0)} hint="Live scoped activity tied to this space." />
+                <div className="max-w-md text-sm leading-6 text-muted-foreground lg:text-right">
+                  {headerMeta}
                 </div>
               </div>
             </div>

@@ -137,16 +137,6 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   );
 }
 
-function StatTile({ label, value, hint }: { label: string; value: string; hint: string }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
-      <div className="mt-3 text-2xl font-semibold text-foreground">{value}</div>
-      <div className="mt-1 text-sm text-muted-foreground">{hint}</div>
-    </div>
-  );
-}
-
 function ToggleField({
   label,
   description,
@@ -273,6 +263,9 @@ export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'set
   const profileDirty = JSON.stringify(profileForm) !== JSON.stringify(initialProfileForm);
   const accountDirty = JSON.stringify(accountForm) !== JSON.stringify(initialAccountForm);
   const pageDirty = showingProfileSection ? profileDirty : accountDirty;
+  const headerMeta = showingProfileSection
+    ? `Completion 86% • Default reach Members only • ${pageDirty ? 'Draft state Unsaved changes' : 'Draft state All changes saved'}`
+    : `Completion 92% • Security 2FA on • ${pageDirty ? 'Draft state Unsaved changes' : 'Draft state All changes saved'}`;
 
   const handleProfileReset = () => {
     setProfileForm(initialProfileForm);
@@ -415,10 +408,8 @@ export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'set
                 </p>
               </div>
 
-              <div className="grid w-full gap-3 sm:grid-cols-3 lg:w-auto lg:min-w-[360px]">
-                <StatTile label="Completion" value={showingProfileSection ? '86%' : '92%'} hint={showingProfileSection ? 'Add 1 more link to finish trust signals.' : 'Security and billing are set up.'} />
-                <StatTile label="Default Reach" value={showingProfileSection ? 'Members only' : '2FA On'} hint={showingProfileSection ? 'Scoped visibility handled per LeapSpace.' : 'Authentication is protected.'} />
-                <StatTile label="Draft State" value={pageDirty ? 'Unsaved' : 'Saved'} hint={pageDirty ? 'You have edits to review.' : 'No pending changes.'} />
+              <div className="max-w-md text-sm leading-6 text-muted-foreground lg:text-right">
+                {headerMeta}
               </div>
             </div>
 
