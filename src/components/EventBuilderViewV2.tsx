@@ -598,6 +598,9 @@ export function EventBuilderViewV2({
   const [regPrice, setRegPrice] = useState(eventData.price?.toString() || '');
   const hasRegistrationConfig = regVisibility !== 'public' || regAccessType !== 'open' || regIsPaid;
 
+  // LeapSpace Defaults Toggle
+  const [useLeapSpaceDefaults, setUseLeapSpaceDefaults] = useState(false);
+
   // Publish / Unpublish State
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [showUnpublishDialog, setShowUnpublishDialog] = useState(false);
@@ -1874,6 +1877,40 @@ export function EventBuilderViewV2({
             <>
               {mainView === 'overview' && (
                 <>
+                  {/* ── Apply LeapSpace Defaults Toggle ── */}
+                  {isDraft && (
+                    <div className="mb-6">
+                      <div className={`flex items-center justify-between rounded-xl border p-4 transition-all ${useLeapSpaceDefaults ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`flex size-9 items-center justify-center rounded-lg ${useLeapSpaceDefaults ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                            <SettingsIcon className="size-4" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-foreground">Apply LeapSpace defaults</div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {useLeapSpaceDefaults
+                                ? 'This event inherits roles, permissions, and configuration from your LeapSpace global settings.'
+                                : 'Turn on to auto-fill this event with your LeapSpace\u2019s default roles, permissions, and configuration.'}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setUseLeapSpaceDefaults(!useLeapSpaceDefaults);
+                            if (!useLeapSpaceDefaults) {
+                              toast.success('LeapSpace defaults applied', { description: 'Roles, permissions, and settings have been inherited from your LeapSpace configuration.' });
+                            } else {
+                              toast.info('Defaults removed', { description: 'This event now uses its own independent configuration.' });
+                            }
+                          }}
+                          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${useLeapSpaceDefaults ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                        >
+                          <span className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${useLeapSpaceDefaults ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* ── Skeleton/Building/Ready: Setup Checklist (MOCK_EVENTS_MASTER_PLAN.md §Event A/B/C) ── */}
                   {isDraft && (
                     <div className="mb-6 space-y-4">

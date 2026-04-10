@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   Bell,
+  BookmarkPlus,
   Briefcase,
   Building2,
   Check,
@@ -32,6 +33,14 @@ import {
 import { toast } from 'sonner@2.0.3';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { ScrollArea } from './ui/scroll-area';
@@ -1156,6 +1165,10 @@ function RolesSection({ leapSpace, roles, setRoles }: { leapSpace: LeapSpaceSumm
   // Edit role form
   const [editPermissions, setEditPermissions] = useState<Set<string>>(new Set());
 
+  // Save as Template dialog state
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [pendingTemplateRole, setPendingTemplateRole] = useState<RoleDefinition | null>(null);
+
   const togglePermission = (set: Set<string>, setFn: React.Dispatch<React.SetStateAction<Set<string>>>, permId: string) => {
     setFn(prev => {
       const next = new Set(prev);
@@ -1181,6 +1194,25 @@ function RolesSection({ leapSpace, roles, setRoles }: { leapSpace: LeapSpaceSumm
     setNewRolePermissions(new Set());
     setShowCreateForm(false);
     toast.success('Custom role created', { description: `${newRole.role} with ${newRole.permissions.length} permissions.` });
+
+    // Prompt to save as template
+    setPendingTemplateRole(newRole);
+    setShowTemplateDialog(true);
+  };
+
+  const handleSaveAsTemplate = () => {
+    if (pendingTemplateRole) {
+      toast.success('Role saved as template', {
+        description: `"${pendingTemplateRole.role}" is now available as a preset across all events and communities in ${leapSpace.name}.`,
+      });
+    }
+    setShowTemplateDialog(false);
+    setPendingTemplateRole(null);
+  };
+
+  const handleSkipTemplate = () => {
+    setShowTemplateDialog(false);
+    setPendingTemplateRole(null);
   };
 
   const handleSaveRoleEdit = () => {
@@ -1341,6 +1373,42 @@ function RolesSection({ leapSpace, roles, setRoles }: { leapSpace: LeapSpaceSumm
           </div>
         </ShellCard>
       )}
+
+      {/* Save as Template Dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <BookmarkPlus className="size-5" />
+              </div>
+              <div>
+                <DialogTitle>Save as template?</DialogTitle>
+              </div>
+            </div>
+            <DialogDescription className="text-sm leading-relaxed">
+              Save <strong>"{pendingTemplateRole?.role}"</strong> as a reusable preset. This template will be available across all events, communities, and nested content inside <strong>{leapSpace.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground leading-relaxed">
+            <div className="font-medium text-foreground mb-2">What this means:</div>
+            <ul className="list-disc list-inside space-y-1.5">
+              <li>This role will appear as a preset when assigning roles in events and communities</li>
+              <li>Team leads can pick this template instead of configuring permissions from scratch</li>
+              <li>Changes to the template will not retroactively affect existing assignments</li>
+            </ul>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" className="rounded-xl" onClick={handleSkipTemplate}>
+              Skip
+            </Button>
+            <Button className="rounded-xl" onClick={handleSaveAsTemplate}>
+              <BookmarkPlus className="mr-2 size-4" />
+              Save as template
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

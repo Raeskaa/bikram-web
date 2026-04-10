@@ -1,23 +1,72 @@
 import { useState } from 'react';
-import { ShieldCheck, User, Shield, Lock, Search, MoreVertical, CheckCircle2, AlertCircle, UserPlus } from 'lucide-react';
+import { ShieldCheck, User, Shield, Lock, Search, MoreVertical, CheckCircle2, AlertCircle, UserPlus, Plus, BookmarkPlus, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
+import { Label } from './ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from './ui/dialog';
 import { useAuth, isEmptyStateUser } from '../contexts/AuthContext';
 import { SectionEmptyState } from './SectionEmptyState';
+import { toast } from 'sonner@2.0.3';
 
 export function PermissionsDashboard() {
   const { currentUser } = useAuth();
   const isEmpty = isEmptyStateUser(currentUser);
 
-  const users = isEmpty
+  const [users, setUsers] = useState(() => isEmpty
     ? [{ id: '0', name: currentUser?.name || 'You', email: currentUser?.email || '', role: 'Owner', status: 'Active' }]
     : [
         { id: '1', name: 'Sarah Chen', email: 'sarah@trueleap.ai', role: 'Owner', status: 'Active' },
         { id: '2', name: 'Marcus Webb', email: 'marcus@trueleap.ai', role: 'Admin', status: 'Active' },
         { id: '3', name: 'Elena Rodriguez', email: 'elena@gmail.com', role: 'Moderator', status: 'Active' },
         { id: '4', name: 'James Park', email: 'james@gmail.com', role: 'Learner', status: 'Pending' },
-      ];
+      ]
+  );
+
+  // Create Role state
+  const [showCreateRole, setShowCreateRole] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleDescription, setNewRoleDescription] = useState('');
+
+  // Save as Template dialog state
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [pendingTemplateRoleName, setPendingTemplateRoleName] = useState('');
+
+  const handleCreateRole = () => {
+    if (!newRoleName.trim()) {
+      toast.error('Role name is required');
+      return;
+    }
+    const roleName = newRoleName.trim();
+    toast.success('Role created', { description: `"${roleName}" is now available for assignment.` });
+    setNewRoleName('');
+    setNewRoleDescription('');
+    setShowCreateRole(false);
+
+    // Prompt to save as template
+    setPendingTemplateRoleName(roleName);
+    setShowTemplateDialog(true);
+  };
+
+  const handleSaveAsTemplate = () => {
+    toast.success('Role saved as template', {
+      description: `"${pendingTemplateRoleName}" is now available as a preset across all events and communities in this LeapSpace.`,
+    });
+    setShowTemplateDialog(false);
+    setPendingTemplateRoleName('');
+  };
+
+  const handleSkipTemplate = () => {
+    setShowTemplateDialog(false);
+    setPendingTemplateRoleName('');
+  };
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -27,9 +76,14 @@ export function PermissionsDashboard() {
             <h1 className="text-foreground">Permissions</h1>
             <p className="text-sm text-muted-foreground">Manage team roles and system-wide access controls.</p>
           </div>
-          <Button className="h-10 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 text-xs font-semibold gap-2 shadow-none">
-            <UserPlus className="size-4" /> Invite User
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="h-10 rounded-lg px-4 text-xs font-semibold gap-2 shadow-none" onClick={() => setShowCreateRole(true)}>
+              <Plus className="size-4" /> Create Role
+            </Button>
+            <Button className="h-10 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 text-xs font-semibold gap-2 shadow-none">
+              <UserPlus className="size-4" /> Invite User
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -102,6 +156,81 @@ export function PermissionsDashboard() {
           </div>
         )}
       </div>
+
+      {/* Create Role Dialog */}
+      <Dialog open={showCreateRole} onOpenChange={setShowCreateRole}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create custom role</DialogTitle>
+            <DialogDescription>
+              Define a new role for your LeapSpace. You can assign permissions and use this role when inviting members.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Role name</Label>
+              <Input
+                value={newRoleName}
+                onChange={e => setNewRoleName(e.target.value)}
+                placeholder="e.g. Community Lead, Event Manager..."
+                className="h-11 rounded-xl border-border"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Description (optional)</Label>
+              <Input
+                value={newRoleDescription}
+                onChange={e => setNewRoleDescription(e.target.value)}
+                placeholder="What this role is responsible for..."
+                className="h-11 rounded-xl border-border"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" className="rounded-xl" onClick={() => setShowCreateRole(false)}>Cancel</Button>
+            <Button className="rounded-xl" onClick={handleCreateRole} disabled={!newRoleName.trim()}>
+              <Plus className="mr-2 size-4" />
+              Create Role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Save as Template Dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <BookmarkPlus className="size-5" />
+              </div>
+              <div>
+                <DialogTitle>Save as template?</DialogTitle>
+              </div>
+            </div>
+            <DialogDescription className="text-sm leading-relaxed">
+              Save <strong>"{pendingTemplateRoleName}"</strong> as a reusable preset. This template will be available across all events, communities, and nested content inside this LeapSpace.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground leading-relaxed">
+            <div className="font-medium text-foreground mb-2">What this means:</div>
+            <ul className="list-disc list-inside space-y-1.5">
+              <li>This role will appear as a preset when assigning roles in events and communities</li>
+              <li>Team leads can pick this template instead of configuring permissions from scratch</li>
+              <li>Changes to the template will not retroactively affect existing assignments</li>
+            </ul>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" className="rounded-xl" onClick={handleSkipTemplate}>
+              Skip
+            </Button>
+            <Button className="rounded-xl" onClick={handleSaveAsTemplate}>
+              <BookmarkPlus className="mr-2 size-4" />
+              Save as template
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

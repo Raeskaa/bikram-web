@@ -10,6 +10,7 @@ import {
   Coins,
   CreditCard,
   Eye,
+  EyeOff,
   Globe,
   Image,
   KeyRound,
@@ -24,6 +25,7 @@ import {
   Sparkles,
   Trash2,
   User,
+  UserX,
   Wallet,
   X,
   Zap,
@@ -77,12 +79,11 @@ type GlobalProfileForm = {
   experience: string;
   education: string;
   featuredLinks: Array<{ label: string; url: string }>;
-  profileVisibility: string;
+  isAnonymous: boolean;
+  discoverabilityMode: 'public' | 'anonymous-searchable' | 'anonymous-hidden';
   showCompany: boolean;
   showLocation: boolean;
   showSocialLinks: boolean;
-  searchDiscoverability: boolean;
-  recommendationSignals: boolean;
 };
 
 type AccountForm = {
@@ -210,12 +211,6 @@ const startPageOptions = [
   { value: 'communities', label: 'Communities' },
 ];
 
-const visibilityOptions = [
-  { value: 'members-only', label: 'LeapSpace members only' },
-  { value: 'connections-only', label: 'Connections only' },
-  { value: 'public', label: 'Public profile' },
-];
-
 // Mock credit history
 const MOCK_CREDIT_HISTORY = [
   { id: '1', type: 'purchase' as const, description: 'Pro Pack purchased', amount: 5000, date: '2026-04-06', status: 'completed' as const },
@@ -258,12 +253,11 @@ export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'set
       { label: 'Portfolio', url: 'https://portfolio.example.com' },
       { label: 'Case Studies', url: 'https://trueleap.io/cases' },
     ],
-    profileVisibility: 'members-only',
+    isAnonymous: false,
+    discoverabilityMode: 'public',
     showCompany: true,
     showLocation: false,
     showSocialLinks: true,
-    searchDiscoverability: true,
-    recommendationSignals: true,
   }), [userName]);
 
   const initialAccountForm = useMemo<AccountForm>(() => ({
@@ -487,7 +481,7 @@ export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'set
             {section === 'profile-basics' ? (
               <div className="space-y-5">
                 <SectionCard title="Profile Basics" description="These are the default identity fields LeapSpaces inherit from unless a scoped profile overrides them.">
-                  {/* Avatar & Banner */}
+                  {/* Avatar & Banner with Anonymous Toggle */}
                   <div className="mb-6 rounded-lg border border-border bg-muted/40 overflow-hidden">
                     <div className="relative h-28 bg-gradient-to-br from-primary/30 via-primary/15 to-muted">
                       <Button variant="outline" size="sm" className="absolute bottom-3 right-3 rounded-lg border-border bg-card/80 backdrop-blur text-xs gap-1.5">
@@ -496,18 +490,48 @@ export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'set
                       </Button>
                     </div>
                     <div className="px-5 pb-5">
-                      <div className="-mt-10 flex items-end gap-4">
-                        <div className="relative">
-                          <div className="flex size-20 items-center justify-center rounded-full border-4 border-card bg-primary text-xl font-semibold text-primary-foreground">
-                            {getInitials(profileForm.fullName)}
+                      <div className="-mt-10 flex items-end justify-between gap-4">
+                        <div className="flex items-end gap-4">
+                          <div className="relative">
+                            {profileForm.isAnonymous ? (
+                              <div className="flex size-20 items-center justify-center rounded-full border-4 border-card bg-muted text-muted-foreground">
+                                <UserX className="size-8" />
+                              </div>
+                            ) : (
+                              <div className="flex size-20 items-center justify-center rounded-full border-4 border-card bg-primary text-xl font-semibold text-primary-foreground">
+                                {getInitials(profileForm.fullName)}
+                              </div>
+                            )}
+                            {!profileForm.isAnonymous && (
+                              <button className="absolute -bottom-1 -right-1 flex size-7 items-center justify-center rounded-full border-2 border-card bg-foreground text-background hover:bg-foreground/90">
+                                <Camera className="size-3.5" />
+                              </button>
+                            )}
                           </div>
-                          <button className="absolute -bottom-1 -right-1 flex size-7 items-center justify-center rounded-full border-2 border-card bg-foreground text-background hover:bg-foreground/90">
-                            <Camera className="size-3.5" />
-                          </button>
+                          <div className="pb-1">
+                            <div className="text-base font-semibold text-foreground">
+                              {profileForm.isAnonymous ? 'Anonymous User' : profileForm.fullName}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {profileForm.isAnonymous ? 'Your identity is hidden from other members' : (profileForm.headline || 'Add a professional headline')}
+                            </div>
+                          </div>
                         </div>
-                        <div className="pb-1">
-                          <div className="text-base font-semibold text-foreground">{profileForm.fullName}</div>
-                          <div className="text-sm text-muted-foreground">{profileForm.headline || 'Add a professional headline'}</div>
+
+                        {/* Anonymous Toggle */}
+                        <div className="flex-shrink-0 pb-1">
+                          <button
+                            onClick={() => updateProfile('isAnonymous', !profileForm.isAnonymous)}
+                            className={cn(
+                              'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-all',
+                              profileForm.isAnonymous
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground',
+                            )}
+                          >
+                            {profileForm.isAnonymous ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            {profileForm.isAnonymous ? 'Anonymous' : 'Go Anonymous'}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -667,62 +691,148 @@ export function ProfileSettingsPage({ currentUser, onBack, initialSection = 'set
             {/* ─── Visibility ─── */}
             {section === 'visibility' ? (
               <div className="space-y-5">
-                <SectionCard title="Global Visibility" description="These are global defaults only. Scoped privacy and anonymity still belong to each LeapSpace Profile.">
+                <SectionCard title="Profile Discoverability" description="Control how others see and find you across LeapSpace. These are global defaults -- individual LeapSpaces can override them.">
                   <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
                     <div className="space-y-4">
-                      <Field label="Profile visibility" hint="Future API: add profileVisibility to /api/profile/visibility.">
-                        <Select value={profileForm.profileVisibility} onValueChange={value => updateProfile('profileVisibility', value)}>
-                          <SelectTrigger className="h-11 rounded-lg border-border bg-input-background">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {visibilityOptions.map(option => (
-                              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </Field>
+                      {/* 3-State Discoverability Selector */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-foreground">Profile mode</Label>
+                        <div className="space-y-3">
+                          {([
+                            {
+                              value: 'public' as const,
+                              label: 'Public profile',
+                              description: 'Your full name, avatar, and professional details are visible. Anyone can find you in search, recommendations, and member directories.',
+                              icon: Globe,
+                            },
+                            {
+                              value: 'anonymous-searchable' as const,
+                              label: 'Anonymous but searchable',
+                              description: 'Your identity is hidden (shown as "Anonymous User"), but your profile still appears in search results, matching, and member directories based on your skills and interests.',
+                              icon: Eye,
+                            },
+                            {
+                              value: 'anonymous-hidden' as const,
+                              label: 'Anonymous and hidden',
+                              description: 'Your identity is fully hidden and you will not appear in any search results, recommendations, or member directories.',
+                              icon: EyeOff,
+                            },
+                          ] as const).map(option => {
+                            const Icon = option.icon;
+                            const selected = profileForm.discoverabilityMode === option.value;
+                            return (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => {
+                                  updateProfile('discoverabilityMode', option.value);
+                                  // Sync anonymous state with discoverability
+                                  if (option.value === 'public') {
+                                    updateProfile('isAnonymous', false);
+                                  } else {
+                                    updateProfile('isAnonymous', true);
+                                  }
+                                }}
+                                className={cn(
+                                  'flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-all',
+                                  selected
+                                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                                    : 'border-border bg-muted/40 hover:bg-accent/50',
+                                )}
+                              >
+                                <div className={cn(
+                                  'mt-0.5 flex size-8 flex-shrink-0 items-center justify-center rounded-lg',
+                                  selected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+                                )}>
+                                  <Icon className="size-4" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className={cn('text-sm font-medium', selected ? 'text-foreground' : 'text-foreground/80')}>{option.label}</span>
+                                    {selected && (
+                                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">Active</span>
+                                    )}
+                                  </div>
+                                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{option.description}</p>
+                                </div>
+                                <div className={cn(
+                                  'mt-1 flex size-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors',
+                                  selected ? 'border-primary bg-primary' : 'border-muted-foreground/30',
+                                )}>
+                                  {selected && <div className="size-2 rounded-full bg-primary-foreground" />}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-                      <ToggleField
-                        label="Show company on global profile"
-                        description="Useful for trust and professional context, but this is still a global default."
-                        checked={profileForm.showCompany}
-                        onCheckedChange={checked => updateProfile('showCompany', checked)}
-                      />
-                      <ToggleField
-                        label="Show location on global profile"
-                        description="Keep this off if you want scoped spaces to decide when location is relevant."
-                        checked={profileForm.showLocation}
-                        onCheckedChange={checked => updateProfile('showLocation', checked)}
-                      />
-                      <ToggleField
-                        label="Show social links"
-                        description="Controls whether linked websites and profiles appear publicly on the global profile."
-                        checked={profileForm.showSocialLinks}
-                        onCheckedChange={checked => updateProfile('showSocialLinks', checked)}
-                      />
-                      <ToggleField
-                        label="Allow member search discovery"
-                        description="Makes the global profile searchable for matching, mentoring, and member directory flows."
-                        checked={profileForm.searchDiscoverability}
-                        onCheckedChange={checked => updateProfile('searchDiscoverability', checked)}
-                      />
-                      <ToggleField
-                        label="Use profile for recommendations"
-                        description="Feeds matching, mentoring, and collaboration suggestions using your global defaults."
-                        checked={profileForm.recommendationSignals}
-                        onCheckedChange={checked => updateProfile('recommendationSignals', checked)}
-                      />
+                      <div className="mt-2 border-t border-border pt-4">
+                        <div className="mb-3 text-sm font-medium text-foreground">Additional display preferences</div>
+                        <div className="space-y-3">
+                          <ToggleField
+                            label="Show company on global profile"
+                            description="Useful for trust and professional context. Only visible when profile is public."
+                            checked={profileForm.showCompany}
+                            onCheckedChange={checked => updateProfile('showCompany', checked)}
+                          />
+                          <ToggleField
+                            label="Show location on global profile"
+                            description="Keep this off if you want scoped spaces to decide when location is relevant."
+                            checked={profileForm.showLocation}
+                            onCheckedChange={checked => updateProfile('showLocation', checked)}
+                          />
+                          <ToggleField
+                            label="Show social links"
+                            description="Controls whether linked websites and profiles appear publicly on the global profile."
+                            checked={profileForm.showSocialLinks}
+                            onCheckedChange={checked => updateProfile('showSocialLinks', checked)}
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="rounded-lg border border-border bg-muted/40 p-5">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <CheckCircle2 className="size-4 text-primary" />
-                        What stays out of My Profile
+                    <div className="space-y-4">
+                      {/* Current status info panel */}
+                      <div className="rounded-lg border border-border bg-muted/40 p-5">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                          {profileForm.discoverabilityMode === 'public' ? (
+                            <><Globe className="size-4 text-primary" /> Your profile is public</>
+                          ) : profileForm.discoverabilityMode === 'anonymous-searchable' ? (
+                            <><Eye className="size-4 text-yellow-500" /> You are anonymous but searchable</>
+                          ) : (
+                            <><EyeOff className="size-4 text-destructive" /> You are fully hidden</>
+                          )}
+                        </div>
+                        <div className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
+                          {profileForm.discoverabilityMode === 'public' ? (
+                            <>
+                              <p>Members can see your name, photo, and professional details. You appear in search results and recommendations.</p>
+                              <p>Individual LeapSpaces may still apply their own scoped anonymity rules.</p>
+                            </>
+                          ) : profileForm.discoverabilityMode === 'anonymous-searchable' ? (
+                            <>
+                              <p>Your name and photo are replaced with "Anonymous User" across the platform. Members can still find your profile via search based on skills and interests.</p>
+                              <p>Useful when you want to participate in communities without revealing your identity.</p>
+                            </>
+                          ) : (
+                            <>
+                              <p>You are completely invisible -- no search results, no directory listings, no recommendations. Only direct invitations can reach you.</p>
+                              <p>You can still browse and participate, but others cannot discover you.</p>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-                        <p>Billing, invoices, payment methods, sessions, passwords, and provider connections remain in My Account.</p>
-                        <p>Anonymity rules do not belong here either. They are handled inside each LeapSpace Profile so privacy stays scoped.</p>
+
+                      <div className="rounded-lg border border-border bg-muted/40 p-5">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                          <CheckCircle2 className="size-4 text-primary" />
+                          What stays out of My Profile
+                        </div>
+                        <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
+                          <p>Billing, invoices, payment methods, sessions, passwords, and provider connections remain in My Account.</p>
+                          <p>Per-LeapSpace anonymity overrides are managed inside each LeapSpace's scoped profile settings.</p>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -246,7 +246,7 @@ function AppLayoutInner({
       { id: 'events-explore' as const, icon: Compass, label: 'Explore', active: currentPage === 'events' || currentPage === 'events-explore' },
       { id: 'events-calendar' as const, icon: CalendarDays, label: 'Calendar', active: currentPage === 'events-calendar' },
     ]},
-    { id: 'courses', icon: BookOpen, label: 'Courses', active: currentPage === 'courses' },
+    // { id: 'courses', icon: BookOpen, label: 'Courses', active: currentPage === 'courses' },
   ];
 
   const draftCommunities = [
